@@ -1,7 +1,71 @@
 import mongoose, { Document } from "mongoose";
 const { Schema, model, models } = mongoose;
 
-// Define interfaces for our document types
+// Define interface// Project interfaces and schema
+export interface IProject extends Document {
+  title: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  thumbnail?: string;
+  demoUrl?: string;
+  sourceUrls: {
+    github?: string;
+    gitlab?: string;
+    other?: string;
+  };
+  technologies: {
+    languages: string[];
+    frameworks: string[];
+    databases: string[];
+    tools: string[];
+  };
+  features: string[];
+  status: "draft" | "published";
+  featured: boolean;
+  startDate?: Date;
+  endDate?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ProjectSchema = new Schema<IProject>(
+  {
+    title: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
+    description: { type: String, required: true },
+    longDescription: String,
+    thumbnail: String,
+    demoUrl: String,
+    sourceUrls: {
+      github: String,
+      gitlab: String,
+      other: String,
+    },
+    technologies: {
+      languages: [String],
+      frameworks: [String],
+      databases: [String],
+      tools: [String],
+    },
+    features: [String],
+    status: {
+      type: String,
+      enum: ["draft", "published"],
+      default: "draft",
+    },
+    featured: { type: Boolean, default: false },
+    startDate: Date,
+    endDate: Date,
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Create indexes for better query performance
+ProjectSchema.index({ status: 1, featured: 1, createdAt: -1 });
+
 export interface IAuthor extends Document {
   name: string;
   email: string;
@@ -115,3 +179,5 @@ export const Tag = models.Tag || model<ITag>("Tag", TagSchema);
 // Using a new collection name to avoid schema conflicts
 export const Article =
   models.Article || model<IArticle>("Article", ArticleSchema);
+export const Project =
+  models.Project || model<IProject>("Project", ProjectSchema);

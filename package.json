@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "NODE_OPTIONS='--loader ts-node/esm' ts-node --esm ./scripts/seed-articles.mts"
+    "seed": "NODE_OPTIONS='--loader ts-node/esm' ts-node --esm ./scripts/seed-projects.mts"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.13",
