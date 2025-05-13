@@ -1,5 +1,3 @@
-import dbConnect from "@/lib/mongodb";
-import { Article } from "@/lib/models";
 import { BlogSearch } from "@/components/blog/BlogSearch";
 import { Pagination } from "@/components/blog/Pagination";
 
@@ -9,55 +7,59 @@ interface SearchParams {
   page?: string | string[];
 }
 
-async function getPublishedArticles(params: SearchParams) {
-  await dbConnect();
+interface Article {
+  _id: string;
+  title: string;
+  excerpt: string;
+  slug: string;
+  createdAt: string;
+  tags: string[];
+}
 
-  const searchParams = {
-    page: Array.isArray(params.page) ? params.page[0] : params.page || "1",
-    q: Array.isArray(params.q) ? params.q[0] : params.q,
-    tag: Array.isArray(params.tag) ? params.tag[0] : params.tag,
+interface ArticleResponse {
+  articles: Article[];
+  pagination: {
+    total: number;
+    pages: number;
+    current: number;
   };
+  tags: string[];
+}
 
-  const page = parseInt(searchParams.page);
-  const limit = 10;
-  const skip = (page - 1) * limit;
+async function getPublishedArticles(
+  params: SearchParams
+): Promise<ArticleResponse> {
+  const searchParams = new URLSearchParams();
 
-  // Build query
-  const query: any = { status: "published" };
-  if (searchParams.q) {
-    query.$or = [
-      { title: { $regex: searchParams.q, $options: "i" } },
-      { excerpt: { $regex: searchParams.q, $options: "i" } },
-      { content: { $regex: searchParams.q, $options: "i" } },
-    ];
-  }
-  const tagQuery = searchParams.tag;
-  if (tagQuery) {
-    query.tags = tagQuery;
+  // Add status filter
+  searchParams.append("status", "published");
+
+  // Add search query if exists
+  if (params.q) {
+    const query = Array.isArray(params.q) ? params.q[0] : params.q;
+    if (query) searchParams.append("q", query);
   }
 
-  // Get articles
-  const articles = await Article.find(query)
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .select("title excerpt slug createdAt tags");
+  // Add tag filter if exists
+  if (params.tag) {
+    const tag = Array.isArray(params.tag) ? params.tag[0] : params.tag;
+    if (tag) searchParams.append("tag", tag);
+  }
 
-  // Get total count for pagination
-  const total = await Article.countDocuments(query);
+  // Add pagination
+  const page = Array.isArray(params.page) ? params.page[0] : params.page ?? "1";
+  searchParams.append("page", page);
+  searchParams.append("limit", "10");
 
-  // Get all unique tags for the filter
-  const allTags = await Article.distinct("tags", { status: "published" });
+  const res = await fetch(
+    `${
+      process.env.NEXT_PUBLIC_APP_URL
+    }/api/articles?${searchParams.toString()}`,
+    { cache: "no-store" }
+  );
 
-  return {
-    articles,
-    pagination: {
-      total,
-      pages: Math.ceil(total / limit),
-      current: page,
-    },
-    tags: allTags,
-  };
+  if (!res.ok) throw new Error("Failed to fetch articles");
+  return res.json();
 }
 
 export default async function BlogPage({

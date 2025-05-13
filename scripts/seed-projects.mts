@@ -45,7 +45,8 @@ const projects = [
     automated refactoring using OpenAI's GPT-4. Features include code completion, 
     documentation generation, and natural language processing for code transformation.`,
     thumbnail: "/ai-assistant-thumbnail.jpg",
-    demoUrl: "https://marketplace.visualstudio.com/items?itemName=username.ai-assistant",
+    demoUrl:
+      "https://marketplace.visualstudio.com/items?itemName=username.ai-assistant",
     sourceUrls: {
       github: "https://github.com/username/ai-assistant",
     },
