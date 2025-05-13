@@ -15,12 +15,11 @@ declare global {
 if (!process.env.MONGODB_URI) {
   throw new Error("Please define the MONGODB_URI environment variable");
 }
-
 if (!process.env.MONGODB_DB) {
   throw new Error("Please define the MONGODB_DB environment variable");
 }
 
-// Initialize the cached connection
+// Initialize the cached connections
 if (!global.mongoose) {
   global.mongoose = { conn: null, promise: null };
 }
@@ -33,8 +32,9 @@ async function dbConnect() {
 
   // If a connection is being established, wait for it
   if (!global.mongoose.promise) {
-    const opts = {
+    const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
+      dbName: process.env.MONGODB_DB,
     };
 
     global.mongoose.promise = mongoose.connect(process.env.MONGODB_URI!, opts);

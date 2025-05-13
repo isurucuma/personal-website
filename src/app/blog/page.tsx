@@ -4,15 +4,21 @@ import { BlogSearch } from "@/components/blog/BlogSearch";
 import { Pagination } from "@/components/blog/Pagination";
 
 interface SearchParams {
-  q?: string;
-  tag?: string;
-  page?: string;
+  q?: string | string[];
+  tag?: string | string[];
+  page?: string | string[];
 }
 
-async function getPublishedArticles(searchParams: SearchParams) {
+async function getPublishedArticles(params: SearchParams) {
   await dbConnect();
 
-  const page = parseInt(searchParams.page || "1");
+  const searchParams = {
+    page: Array.isArray(params.page) ? params.page[0] : params.page || "1",
+    q: Array.isArray(params.q) ? params.q[0] : params.q,
+    tag: Array.isArray(params.tag) ? params.tag[0] : params.tag,
+  };
+
+  const page = parseInt(searchParams.page);
   const limit = 10;
   const skip = (page - 1) * limit;
 
@@ -25,8 +31,9 @@ async function getPublishedArticles(searchParams: SearchParams) {
       { content: { $regex: searchParams.q, $options: "i" } },
     ];
   }
-  if (searchParams.tag) {
-    query.tags = searchParams.tag;
+  const tagQuery = searchParams.tag;
+  if (tagQuery) {
+    query.tags = tagQuery;
   }
 
   // Get articles
@@ -55,11 +62,10 @@ async function getPublishedArticles(searchParams: SearchParams) {
 
 export default async function BlogPage({
   searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
+}: Readonly<{ searchParams: SearchParams }>) {
+  const resolvedParams = await Promise.resolve(searchParams);
   const { articles, pagination, tags } = await getPublishedArticles(
-    searchParams
+    resolvedParams
   );
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">

@@ -8,8 +8,8 @@ export async function GET(request: NextRequest) {
     await dbConnect();
 
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "10");
+    const page = parseInt(searchParams.get("page") ?? "1");
+    const limit = parseInt(searchParams.get("limit") ?? "10");
     const tag = searchParams.get("tag");
 
     const query = {
@@ -20,9 +20,9 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     const articles = await Article.find(query)
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
+      // .sort({ createdAt: -1 })
+      // .skip(skip)
+      // .limit(limit)
       .select("title slug excerpt tags published createdAt updatedAt");
 
     const total = await Article.countDocuments(query);

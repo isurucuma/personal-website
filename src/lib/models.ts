@@ -1,4 +1,5 @@
-import { Document, Schema, model, models } from "mongoose";
+import mongoose, { Document } from "mongoose";
+const { Schema, model, models } = mongoose;
 
 // Define interfaces for our document types
 export interface IAuthor extends Document {
@@ -58,7 +59,7 @@ const TagSchema = new Schema<ITag>({
 const ArticleSchema = new Schema<IArticle>(
   {
     title: { type: String, required: true },
-    slug: { type: String, required: true, unique: true },
+    slug: { type: String, required: true, unique: true }, // unique will create an index
     excerpt: { type: String, required: true },
     content: { type: String, required: true },
     tags: [String], // Simple string array for tags
@@ -76,7 +77,6 @@ const ArticleSchema = new Schema<IArticle>(
 );
 
 // Create indexes for better query performance
-ArticleSchema.index({ slug: 1 });
 ArticleSchema.index({ status: 1, createdAt: -1 });
 ArticleSchema.index({ tags: 1 });
 
@@ -114,4 +114,4 @@ export const Author = models.Author || model<IAuthor>("Author", AuthorSchema);
 export const Tag = models.Tag || model<ITag>("Tag", TagSchema);
 // Using a new collection name to avoid schema conflicts
 export const Article =
-  models.Article2 || model<IArticle>("Article2", ArticleSchema);
+  models.Article || model<IArticle>("Article", ArticleSchema);

@@ -55,7 +55,8 @@ async function getArticleWithNavigation(slug: string) {
 }
 
 export default async function BlogPostPage({ params }: Props) {
-  const { slug } = await params;
+  const resolvedParams = await Promise.resolve(params);
+  const { slug } = resolvedParams;
   const { article, navigation } = await getArticleWithNavigation(slug);
 
   if (!article) {
