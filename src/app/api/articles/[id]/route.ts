@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { Article } from "@/lib/models";
 import { authenticate } from "@/lib/auth";
+import mongoose from "mongoose";
 
 interface Props {
   params: {
@@ -58,9 +59,12 @@ export async function PUT(request: NextRequest, { params }: Props) {
     }
 
     return NextResponse.json(article);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating article:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    // if (error instanceof mongoose.Error) {
+    //   return NextResponse.json({ error: error.message }, { status: 500 });
+    // }
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
 

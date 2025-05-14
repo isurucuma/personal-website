@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectForm } from "@/components/projects/ProjectForm";
+import { ProjectForm, ProjectFormData } from "@/components/projects/ProjectForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,7 +14,7 @@ interface Props {
 
 export default function EditProjectPage({ params }: Props) {
   const router = useRouter();
-  const [project, setProject] = useState<any>(null);
+  const [project, setProject] = useState<ProjectFormData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [projectId, setProjectId] = useState<string | null>(null);
 
@@ -45,7 +45,7 @@ export default function EditProjectPage({ params }: Props) {
     }
   };
 
-  const handleUpdateProject = async (formData: any) => {
+  const handleUpdateProject = async (formData: ProjectFormData) => {
     if (!projectId) return;
     try {
       const res = await fetch(`/api/projects/${projectId}`, {

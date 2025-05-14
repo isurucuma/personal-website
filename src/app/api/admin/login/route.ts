@@ -20,6 +20,8 @@ export async function POST(req: NextRequest) {
 
     return response;
   } catch (error) {
+    // log this error to your logging system
+    console.error("Error during login:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

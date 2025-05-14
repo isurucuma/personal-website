@@ -1,6 +1,6 @@
 "use client";
 
-import { ProjectForm } from "@/components/projects/ProjectForm";
+import { ProjectForm, ProjectFormData } from "@/components/projects/ProjectForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function NewProjectPage() {
   const router = useRouter();
 
-  const handleCreateProject = async (formData: any) => {
+  const handleCreateProject = async (formData: ProjectFormData) => {
     try {
       const res = await fetch("/api/projects", {
         method: "POST",

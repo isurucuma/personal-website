@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { type NextApiResponse } from "next";
 
-export async function authenticate(req: NextRequest) {
+export async function authenticate(_req: NextRequest) {
   const cookieStore = await cookies();
   const sessionCookie = cookieStore.get("admin_session");
 

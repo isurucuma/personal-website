@@ -15,7 +15,6 @@ interface Article {
 
 export default function ArticlesManagementPage() {
   const [articles, setArticles] = useState<Article[]>([]);
-  const router = useRouter();
 
   useEffect(() => {
     fetchArticles();
