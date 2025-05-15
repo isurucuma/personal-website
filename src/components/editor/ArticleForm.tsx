@@ -1,27 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { ArticleEditor } from "./ArticleEditor";
 
-interface ArticleFormProps {
-  initialData?: {
-    id?: string;
-    title: string;
-    slug: string;
-    content: string;
-    excerpt: string;
-    tags: string[];
-    published: boolean;
-  };
+export interface ArticleFormData {
+  id?: string;
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  tags: string[];
+  published: boolean;
 }
 
-export function ArticleForm({ initialData }: ArticleFormProps) {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
+interface ArticleFormProps {
+  initialData?: ArticleFormData;
+  onSubmit: (data: ArticleFormData) => Promise<void>;
+  isSubmitting?: boolean;
+  onCancel?: () => void;
+}
+
+export function ArticleForm({
+  initialData,
+  onSubmit,
+  isSubmitting,
+  onCancel,
+}: ArticleFormProps) {
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
     slug: initialData?.slug || "",
@@ -33,38 +40,21 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
-    try {
-      const response = await fetch(
-        initialData?.id ? `/api/articles/${initialData.id}` : "/api/articles",
-        {
-          method: initialData?.id ? "PUT" : "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            ...formData,
-            tags: formData.tags
-              .split(",")
-              .map((tag) => tag.trim())
-              .filter(Boolean),
-          }),
-        }
-      );
+    const submissionData: ArticleFormData = {
+      ...initialData,
+      title: formData.title,
+      slug: formData.slug,
+      content: formData.content,
+      excerpt: formData.excerpt,
+      tags: formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean),
+      published: formData.published,
+    };
 
-      if (!response.ok) {
-        throw new Error("Failed to save article");
-      }
-
-      router.push("/admin");
-      router.refresh();
-    } catch (error) {
-      console.error("Error saving article:", error);
-      // Handle error (show toast notification, etc.)
-    } finally {
-      setLoading(false);
-    }
+    await onSubmit(submissionData);
   };
 
   return (
@@ -135,13 +125,13 @@ export function ArticleForm({ initialData }: ArticleFormProps) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.back()}
-          disabled={loading}
+          onClick={onCancel}
+          disabled={isSubmitting}
         >
           Cancel
         </Button>
-        <Button type="submit" disabled={loading}>
-          {loading ? "Saving..." : initialData ? "Update" : "Create"}
+        <Button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Saving..." : initialData ? "Update" : "Create"}
         </Button>
       </div>
     </form>

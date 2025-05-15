@@ -1,14 +1,41 @@
-import { authenticate } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { Project } from "@/lib/models";
-import { NextRequest, NextResponse } from "next/server";
+import { authenticate } from "@/lib/auth";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+interface Props {
+  params: {
+    id: string;
+  };
+}
+
+interface ProjectBody {
+  title: string;
+  slug: string;
+  description: string;
+  longDescription?: string;
+  thumbnail?: string;
+  demoUrl?: string;
+  sourceUrls: {
+    github?: string;
+    gitlab?: string;
+    other?: string;
+  };
+  technologies: {
+    languages: string[];
+    frameworks: string[];
+    databases: string[];
+    tools: string[];
+  };
+  features: string[];
+  published: boolean;
+  featured: boolean;
+  startDate?: string;
+  endDate?: string;
+}
+
+export async function GET(request: NextRequest, { params }: Props) {
   try {
-    await params;
     await dbConnect();
     const project = await Project.findById(params.id);
 
@@ -17,68 +44,76 @@ export async function GET(
     }
 
     return NextResponse.json(project);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("Database Error:", error);
     return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
       { status: 500 }
     );
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, { params }: Props) {
   try {
-    const user = await authenticate(request);
+    const user = await authenticate();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = params instanceof Promise ? (await params).id : params.id;
     await dbConnect();
-    const data = await request.json();
+    const body = (await request.json()) as ProjectBody;
 
-    const project = await Project.findByIdAndUpdate(id, data, {
-      new: true,
-      runValidators: true,
-    });
+    const project = await Project.findByIdAndUpdate(
+      params.id,
+      {
+        ...body,
+        status: body.published ? "published" : "draft",
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     return NextResponse.json(project);
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("Error updating project:", error);
     return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, { params }: Props) {
   try {
-    const user = await authenticate(request);
+    const user = await authenticate();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const id = params instanceof Promise ? (await params).id : params.id;
     await dbConnect();
-    const project = await Project.findByIdAndDelete(id);
+    const project = await Project.findByIdAndDelete(params.id);
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
     return NextResponse.json({ message: "Project deleted successfully" });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    console.error("Error deleting project:", error);
     return NextResponse.json(
-      { error: error.message || "Internal Server Error" },
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
       { status: 500 }
     );
   }

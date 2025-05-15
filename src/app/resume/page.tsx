@@ -94,8 +94,8 @@ export default function ResumePage() {
                   C++
                 </li>
                 <li>
-                  Enhanced security using Keycloak and OpenFGA based on Google's
-                  Zanzibar model
+                  Enhanced security using Keycloak and OpenFGA based on
+                  Google&apos;s Zanzibar model
                 </li>
                 <li>
                   Built mission-control service using Prometheus, Jaeger, and

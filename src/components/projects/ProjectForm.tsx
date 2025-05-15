@@ -10,7 +10,7 @@ interface Technology {
   tools: string[];
 }
 
-interface ProjectFormData {
+export interface ProjectFormData {
   title: string;
   slug: string;
   description: string;

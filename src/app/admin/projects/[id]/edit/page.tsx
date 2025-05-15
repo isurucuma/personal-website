@@ -1,15 +1,16 @@
 "use client";
 
-import { ProjectForm, ProjectFormData } from "@/components/projects/ProjectForm";
+import {
+  ProjectForm,
+  ProjectFormData,
+} from "@/components/projects/ProjectForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 interface Props {
-  params: {
-    id: string;
-  } | Promise<{ id: string }>;
+  params: Promise<{ id: string }>;
 }
 
 export default function EditProjectPage({ params }: Props) {

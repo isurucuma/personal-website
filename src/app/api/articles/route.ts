@@ -3,6 +3,26 @@ import dbConnect from "@/lib/mongodb";
 import { Article } from "@/lib/models";
 import { authenticate } from "@/lib/auth";
 
+interface ArticleQuery {
+  status?: "published" | "draft";
+  tags?: string;
+  $or?: Array<{
+    [key: string]: {
+      $regex: string;
+      $options: string;
+    };
+  }>;
+}
+
+interface ArticleBody {
+  title: string;
+  slug: string;
+  content: string;
+  excerpt: string;
+  tags: string[];
+  published: boolean;
+}
+
 export async function GET(request: NextRequest) {
   try {
     await dbConnect();
@@ -15,7 +35,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
 
     // Build the query object
-    const query: any = {};
+    const query: ArticleQuery = {};
 
     // Status filter
     if (status === "published") {
@@ -75,14 +95,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const isAuthenticated = await authenticate(request);
+    const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     await dbConnect();
 
-    const body = await request.json();
+    const body = (await request.json()) as ArticleBody;
     const { title, slug, content, excerpt, tags, published } = body;
 
     const article = new Article({
@@ -97,22 +117,27 @@ export async function POST(request: NextRequest) {
     await article.save();
 
     return NextResponse.json(article, { status: 201 });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating article:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(request: NextRequest) {
   try {
-    const isAuthenticated = await authenticate(request);
+    const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
     await dbConnect();
 
-    const body = await request.json();
+    const body = (await request.json()) as ArticleBody;
     const { title, slug, content, excerpt, tags, published } = body;
 
     const article = await Article.findOneAndUpdate(
@@ -132,8 +157,13 @@ export async function PUT(request: NextRequest) {
     }
 
     return NextResponse.json(article);
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error updating article:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
   }
 }

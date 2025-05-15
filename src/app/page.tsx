@@ -8,8 +8,8 @@ export default function Home() {
         Welcome to My Portfolio
       </h1>
       <p className="text-xl text-center text-muted-foreground max-w-[600px]">
-        I'm a passionate developer creating innovative solutions. Explore my
-        work, read my blog posts, and learn more about my journey in tech.
+        I&apos;m a passionate developer creating innovative solutions. Explore
+        my work, read my blog posts, and learn more about my journey in tech.
       </p>
       <div className="flex gap-4">
         <Button asChild>

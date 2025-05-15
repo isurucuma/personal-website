@@ -65,7 +65,8 @@ export default async function BlogPostPage({ params }: Props) {
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold mb-4">Article not found</h1>
           <p className="text-muted-foreground">
-            The article you're looking for doesn't exist or has been removed.
+            The article you&apos;re looking for doesn&apos;t exist or has been
+            removed.
           </p>
         </div>
       </div>

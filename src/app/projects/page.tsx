@@ -1,10 +1,18 @@
+import { IProject } from "@/lib/models";
+import Image from "next/image";
+
+interface ProjectWithId extends IProject {
+  _id: string;
+}
+
 async function getProjects() {
   const res = await fetch(
     `${process.env.NEXT_PUBLIC_APP_URL}/api/projects?status=published`,
     { cache: "no-store" }
   );
   if (!res.ok) throw new Error("Failed to fetch projects");
-  return res.json();
+  const data = await res.json();
+  return data.projects as ProjectWithId[];
 }
 
 export default async function ProjectsPage() {
@@ -19,16 +27,18 @@ export default async function ProjectsPage() {
         <h2 className="text-2xl font-semibold mb-6">Featured Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {projects
-            .filter((project: any) => project.featured)
-            .map((project: any) => (
+            .filter((project) => project.featured)
+            .map((project) => (
               <div
                 key={project._id}
                 className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {project.thumbnail && (
-                  <img
+                  <Image
                     src={project.thumbnail}
                     alt={project.title}
+                    width={800}
+                    height={400}
                     className="w-full h-48 object-cover"
                   />
                 )}
@@ -41,7 +51,7 @@ export default async function ProjectsPage() {
                   </p>
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-2">
-                      {project.technologies.languages.map((lang: string) => (
+                      {project.technologies.languages.map((lang) => (
                         <span
                           key={lang}
                           className="px-2 py-1 bg-primary/10 rounded-full text-sm"
@@ -62,7 +72,7 @@ export default async function ProjectsPage() {
                         Live Demo
                       </a>
                     )}
-                    {project.sourceUrls.github && (
+                    {project.sourceUrls?.github && (
                       <a
                         href={project.sourceUrls.github}
                         target="_blank"
@@ -84,8 +94,8 @@ export default async function ProjectsPage() {
         <h2 className="text-2xl font-semibold mb-6">All Projects</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {projects
-            .filter((project: any) => !project.featured)
-            .map((project: any) => (
+            .filter((project) => !project.featured)
+            .map((project) => (
               <div
                 key={project._id}
                 className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow"
@@ -102,7 +112,7 @@ export default async function ProjectsPage() {
                       {project.technologies.languages
                         .concat(project.technologies.frameworks)
                         .slice(0, 3)
-                        .map((tech: string) => (
+                        .map((tech) => (
                           <span
                             key={tech}
                             className="px-2 py-1 bg-secondary rounded-full text-sm"
@@ -123,7 +133,7 @@ export default async function ProjectsPage() {
                         Live Demo
                       </a>
                     )}
-                    {project.sourceUrls.github && (
+                    {project.sourceUrls?.github && (
                       <a
                         href={project.sourceUrls.github}
                         target="_blank"
