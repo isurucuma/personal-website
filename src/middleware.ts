@@ -10,7 +10,7 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
-    const isAuthenticated = await authenticate(request);
+    const isAuthenticated = await authenticate();
 
     if (!isAuthenticated) {
       // Redirect to login page

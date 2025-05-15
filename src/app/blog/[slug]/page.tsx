@@ -3,9 +3,9 @@ import { Article } from "@/lib/models";
 import { ArticleNavigation } from "@/components/blog/ArticleNavigation";
 
 interface Props {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 async function getArticleWithNavigation(slug: string) {

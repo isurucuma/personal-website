@@ -4,9 +4,9 @@ import { Project } from "@/lib/models";
 import { authenticate } from "@/lib/auth";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 interface ProjectBody {
@@ -37,7 +37,8 @@ interface ProjectBody {
 export async function GET(request: NextRequest, { params }: Props) {
   try {
     await dbConnect();
-    const project = await Project.findById(params.id);
+    const {id} = await params
+    const project = await Project.findById(id);
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
 export async function PUT(request: NextRequest, { params }: Props) {
   try {
+    const {id} = await params
     const user = await authenticate();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -66,7 +68,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     const body = (await request.json()) as ProjectBody;
 
     const project = await Project.findByIdAndUpdate(
-      params.id,
+      id,
       {
         ...body,
         status: body.published ? "published" : "draft",
@@ -95,13 +97,14 @@ export async function PUT(request: NextRequest, { params }: Props) {
 
 export async function DELETE(request: NextRequest, { params }: Props) {
   try {
+    const {id} = await params
     const user = await authenticate();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
-    const project = await Project.findByIdAndDelete(params.id);
+    const project = await Project.findByIdAndDelete(id);
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });

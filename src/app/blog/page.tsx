@@ -64,7 +64,7 @@ async function getPublishedArticles(
 
 export default async function BlogPage({
   searchParams,
-}: Readonly<{ searchParams: SearchParams }>) {
+}: { searchParams: Promise<SearchParams> }) {
   const resolvedParams = await Promise.resolve(searchParams);
   const { articles, pagination, tags } = await getPublishedArticles(
     resolvedParams

@@ -1,12 +1,12 @@
-import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import { Article } from "@/lib/models";
 import { authenticate } from "@/lib/auth";
 
 interface Props {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 type ArticleResponse = {
@@ -20,45 +20,53 @@ type ArticleResponse = {
   updatedAt: string;
 };
 
-export async function GET(
-  req: NextApiRequest,
-  res: NextApiResponse<ArticleResponse>
-) {
+export async function GET(request: NextRequest, { params }: Props) {
   try {
     await dbConnect();
-    const article = await Article.findById(params.id);
-
+    const {id} = await params;
+    const article = await Article.findById(id);
     if (!article) {
-      return NextApiResponse.json(
+      return NextResponse.json(
         { error: "Article not found" },
         { status: 404 }
       );
     }
 
-    return NextApiResponse.json(article);
+    const articleResponse: ArticleResponse = {
+      title: article.title,
+      slug: article.slug,
+      content: article.content,
+      excerpt: article.excerpt,
+      tags: article.tags,
+      status: article.status,
+      createdAt: article.createdAt.toISOString(),
+      updatedAt: article.updatedAt.toISOString()
+    };
+    return NextResponse.json(articleResponse);
   } catch (error) {
     console.error("Database Error:", error);
-    return NextApiResponse.json(
-      { error: "Internal Server Error" },
-      { status: 500 }
-    );
+    return NextResponse.json(
+      { error: "Internal Server Error" }, {status: 500});
   }
 }
 
-export async function PUT(request: NextApiRequest, { params }: Props) {
+export async function PUT(request: NextRequest, { params }: Props) {
   try {
     const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
-      return new NextApiResponse("Unauthorized", { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     await dbConnect();
-
+    const { id } = await params;
     const body = await request.json();
     const { title, slug, content, excerpt, tags, published } = body;
 
     const article = await Article.findByIdAndUpdate(
-      params.id,
+      id,
       {
         title,
         slug,
@@ -71,46 +79,61 @@ export async function PUT(request: NextApiRequest, { params }: Props) {
     );
 
     if (!article) {
-      return NextApiResponse.json(
+      return NextResponse.json(
         { error: "Article not found" },
         { status: 404 }
       );
     }
 
-    return NextApiResponse.json(article);
-  } catch (error: unknown) {
-    console.error("Error updating article:", error);
-    // if (error instanceof mongoose.Error) {
-    //   return NextApiResponse.json({ error: error.message }, { status: 500 });
-    // }
-    return NextApiResponse.json(
+    const articleResponse: ArticleResponse = {
+      title: article.title,
+      slug: article.slug,
+      content: article.content,
+      excerpt: article.excerpt,
+      tags: article.tags,
+      status: article.status,
+      createdAt: article.createdAt.toISOString(),
+      updatedAt: article.updatedAt.toISOString()
+    };
+
+    return NextResponse.json(articleResponse);
+  } catch (error) {
+    console.error("Database Error:", error);
+    return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
     );
   }
 }
 
-export async function DELETE(request: NextApiRequest, { params }: Props) {
+export async function DELETE(request: NextRequest, { params }: Props) {
   try {
     const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
-      return new NextApiResponse("Unauthorized", { status: 401 });
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     await dbConnect();
-    const article = await Article.findByIdAndDelete(params.id);
+    const { id } = await params;
+    const article = await Article.findByIdAndDelete(id);
 
     if (!article) {
-      return NextApiResponse.json(
+      return NextResponse.json(
         { error: "Article not found" },
         { status: 404 }
       );
     }
 
-    return NextApiResponse.json({ message: "Article deleted successfully" });
+    return NextResponse.json({ 
+      message: "Article deleted successfully",
+      id: article._id.toString()
+    });
   } catch (error) {
     console.error("Database Error:", error);
-    return NextApiResponse.json(
+    return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 }
     );
