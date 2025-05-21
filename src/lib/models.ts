@@ -1,7 +1,7 @@
-import mongoose, { Document } from "mongoose";
-const { Schema, model, models } = mongoose;
+import mongoose, { Document, Model, Schema } from "mongoose";
+const { model, models } = mongoose;
 
-// Define interface// Project interfaces and schema
+// Project interfaces and schema
 export interface IProject extends Document {
   title: string;
   slug: string;
@@ -23,12 +23,77 @@ export interface IProject extends Document {
   features: string[];
   status: "draft" | "published";
   featured: boolean;
-  startDate?: Date;
+  startDate: Date;
   endDate?: Date;
+}
+
+// Article interfaces and schema
+export interface IArticle extends Document {
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  tags: string[];
+  status: "draft" | "published";
   createdAt: Date;
   updatedAt: Date;
 }
 
+// Resume Interfaces
+interface ISocialLinks {
+  github?: string;
+  linkedin?: string;
+  medium?: string;
+  [key: string]: string | undefined;
+}
+
+export interface IBasicInfo {
+  name: string;
+  title: string;
+  location: string;
+  socialLinks: ISocialLinks;
+  summary: string;
+}
+
+export interface IExperience {
+  title: string;
+  company: string;
+  startDate: Date;
+  endDate?: Date;
+  current: boolean;
+  responsibilities: string[];
+}
+
+export interface ISkillCategory {
+  name: string;
+  skills: string[];
+}
+
+export interface IEducation {
+  degree: string;
+  institution: string;
+  startYear: number;
+  endYear: number;
+  gpa?: string;
+  honors?: string;
+}
+
+export interface ICertification {
+  name: string;
+  issuer: string;
+  date: Date;
+}
+
+export interface IResume extends Document {
+  basicInfo: IBasicInfo;
+  experiences: IExperience[];
+  skillCategories: ISkillCategory[];
+  education: IEducation[];
+  certifications: ICertification[];
+  updatedAt: Date;
+}
+
+// Project Schema
 const ProjectSchema = new Schema<IProject>(
   {
     title: { type: String, required: true },
@@ -55,7 +120,7 @@ const ProjectSchema = new Schema<IProject>(
       default: "draft",
     },
     featured: { type: Boolean, default: false },
-    startDate: Date,
+    startDate: { type: Date, required: true },
     endDate: Date,
   },
   {
@@ -65,38 +130,6 @@ const ProjectSchema = new Schema<IProject>(
 
 // Create indexes for better query performance
 ProjectSchema.index({ status: 1, featured: 1, createdAt: -1 });
-
-export interface IAuthor extends Document {
-  name: string;
-  email: string;
-  bio: string;
-  avatarUrl?: string;
-  socialLinks: {
-    github?: string;
-    linkedin?: string;
-    twitter?: string;
-    medium?: string;
-  };
-}
-
-export interface ITag extends Document {
-  name: string;
-  slug: string;
-  description?: string;
-}
-
-export interface IArticle extends Document {
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  author?: IAuthor["_id"];
-  tags: string[];
-  status: "draft" | "published";
-  featuredImage?: string;
-  createdAt: Date;
-  updatedAt: Date;
-}
 
 // Author Schema
 const AuthorSchema = new Schema<IAuthor>({
@@ -123,17 +156,17 @@ const TagSchema = new Schema<ITag>({
 const ArticleSchema = new Schema<IArticle>(
   {
     title: { type: String, required: true },
-    slug: { type: String, required: true, unique: true }, // unique will create an index
+    slug: { type: String, required: true, unique: true },
     excerpt: { type: String, required: true },
     content: { type: String, required: true },
-    tags: [String], // Simple string array for tags
+    tags: [String],
     status: {
       type: String,
       enum: ["draft", "published"],
       default: "draft",
-      required: true,
     },
-    featuredImage: String,
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
   },
   {
     timestamps: true,
@@ -143,6 +176,57 @@ const ArticleSchema = new Schema<IArticle>(
 // Create indexes for better query performance
 ArticleSchema.index({ status: 1, createdAt: -1 });
 ArticleSchema.index({ tags: 1 });
+
+// Resume Schemas
+const BasicInfoSchema = new Schema<IBasicInfo>({
+  name: { type: String, required: true },
+  title: { type: String, required: true },
+  location: { type: String, required: true },
+  socialLinks: {
+    github: String,
+    linkedin: String,
+    medium: String,
+  },
+  summary: { type: String, required: true },
+});
+
+const ExperienceSchema = new Schema<IExperience>({
+  title: { type: String, required: true },
+  company: { type: String, required: true },
+  startDate: { type: Date, required: true },
+  endDate: Date,
+  current: { type: Boolean, default: false },
+  responsibilities: [{ type: String }],
+});
+
+const SkillCategorySchema = new Schema<ISkillCategory>({
+  name: { type: String, required: true },
+  skills: [{ type: String }],
+});
+
+const EducationSchema = new Schema<IEducation>({
+  degree: { type: String, required: true },
+  institution: { type: String, required: true },
+  startYear: { type: Number, required: true },
+  endYear: { type: Number, required: true },
+  gpa: String,
+  honors: String,
+});
+
+const CertificationSchema = new Schema<ICertification>({
+  name: { type: String, required: true },
+  issuer: { type: String, required: true },
+  date: { type: Date, required: true },
+});
+
+const ResumeSchema = new Schema<IResume>({
+  basicInfo: { type: BasicInfoSchema, required: true },
+  experiences: [ExperienceSchema],
+  skillCategories: [SkillCategorySchema],
+  education: [EducationSchema],
+  certifications: [CertificationSchema],
+  updatedAt: { type: Date, default: Date.now },
+});
 
 // Helper functions
 export async function getArticleById(id: string): Promise<{
@@ -156,6 +240,7 @@ export async function getArticleById(id: string): Promise<{
 } | null> {
   const dbConnect = (await import("./mongodb")).default;
   await dbConnect();
+
   const article = await Article.findById(id).select(
     "_id title slug excerpt content tags status"
   );
@@ -168,7 +253,7 @@ export async function getArticleById(id: string): Promise<{
     slug: article.slug,
     excerpt: article.excerpt,
     content: article.content,
-    tags: article.tags,
+    tags: article.tags || [],
     published: article.status === "published",
   };
 }
@@ -177,7 +262,9 @@ export async function getArticleById(id: string): Promise<{
 export const Author = models.Author || model<IAuthor>("Author", AuthorSchema);
 export const Tag = models.Tag || model<ITag>("Tag", TagSchema);
 // Using a new collection name to avoid schema conflicts
-export const Article =
-  models.Article || model<IArticle>("Article", ArticleSchema);
-export const Project =
-  models.Project || model<IProject>("Project", ProjectSchema);
+export const Article: Model<IArticle> =
+  models?.Article || model<IArticle>("Article", ArticleSchema);
+export const Project: Model<IProject> =
+  models?.Project || model<IProject>("Project", ProjectSchema);
+export const Resume: Model<IResume> =
+  models?.Resume || model<IResume>("Resume", ResumeSchema);

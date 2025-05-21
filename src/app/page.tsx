@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function Home() {
   return (
@@ -11,6 +12,15 @@ export default function Home() {
         I&apos;m a passionate developer creating innovative solutions. Explore
         my work, read my blog posts, and learn more about my journey in tech.
       </p>
+      <div className="relative w-[600px] h-[300px] rounded-lg overflow-hidden">
+        <Image
+          src="/uploads/portfolio-thumbnail.jpg"
+          alt="Portfolio Preview"
+          fill
+          style={{ objectFit: "cover" }}
+          priority
+        />
+      </div>
       <div className="flex gap-4">
         <Button asChild>
           <Link href="/projects">View Projects</Link>

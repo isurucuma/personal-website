@@ -13,7 +13,7 @@ const projects = [
     longDescription: `A full-featured portfolio website showcasing my projects and technical writing. 
     Built with Next.js 14 App Router and MongoDB, featuring a custom CMS for managing content,
     Server Components for optimal performance, and a modern responsive design.`,
-    thumbnail: "/portfolio-thumbnail.jpg",
+    thumbnail: "/uploads/portfolio-thumbnail.jpg",
     demoUrl: "https://portfolio.example.com",
     sourceUrls: {
       github: "https://github.com/username/portfolio-next",
@@ -44,7 +44,7 @@ const projects = [
     longDescription: `A VS Code extension that provides intelligent code suggestions and 
     automated refactoring using OpenAI's GPT-4. Features include code completion, 
     documentation generation, and natural language processing for code transformation.`,
-    thumbnail: "/ai-assistant-thumbnail.jpg",
+    thumbnail: "/uploads/ai-assistant-thumbnail.jpg",
     demoUrl:
       "https://marketplace.visualstudio.com/items?itemName=username.ai-assistant",
     sourceUrls: {
@@ -75,7 +75,7 @@ const projects = [
     longDescription: `A scalable e-commerce solution built with microservices architecture. 
     Features include product management, shopping cart functionality, secure payment processing, 
     real-time inventory tracking, and comprehensive order management.`,
-    thumbnail: "/ecommerce-thumbnail.jpg",
+    thumbnail: "/uploads/ecommerce-thumbnail.jpg",
     demoUrl: "https://shop.example.com",
     sourceUrls: {
       github: "https://github.com/username/ecommerce",
@@ -106,7 +106,7 @@ const projects = [
     longDescription: `A comprehensive weather analytics platform that aggregates data from 
     multiple weather APIs, providing real-time monitoring, historical data analysis, and 
     predictive weather patterns using machine learning.`,
-    thumbnail: "/weather-thumbnail.jpg",
+    thumbnail: "/uploads/weather-thumbnail.jpg",
     demoUrl: "https://weather.example.com",
     sourceUrls: {
       github: "https://github.com/username/weather-analytics",
