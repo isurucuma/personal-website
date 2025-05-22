@@ -12,7 +12,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: process.env.VERCEL_URL ?? "your-domain.com",
+        hostname: process.env.NEXT_PUBLIC_APP_URL ?? "your-domain.com",
         pathname: "/uploads/**",
       },
     ],

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
-import { Article } from "@/lib/models";
+import { Article, IArticle } from "@/lib/models";
 import { authenticate } from "@/lib/auth";
 
 interface Props {
@@ -23,13 +23,10 @@ type ArticleResponse = {
 export async function GET(request: NextRequest, { params }: Props) {
   try {
     await dbConnect();
-    const {id} = await params;
+    const { id } = await params;
     const article = await Article.findById(id);
     if (!article) {
-      return NextResponse.json(
-        { error: "Article not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
     const articleResponse: ArticleResponse = {
@@ -40,13 +37,15 @@ export async function GET(request: NextRequest, { params }: Props) {
       tags: article.tags,
       status: article.status,
       createdAt: article.createdAt.toISOString(),
-      updatedAt: article.updatedAt.toISOString()
+      updatedAt: article.updatedAt.toISOString(),
     };
     return NextResponse.json(articleResponse);
   } catch (error) {
     console.error("Database Error:", error);
     return NextResponse.json(
-      { error: "Internal Server Error" }, {status: 500});
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -54,10 +53,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
   try {
     const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
@@ -79,10 +75,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
     );
 
     if (!article) {
-      return NextResponse.json(
-        { error: "Article not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
     const articleResponse: ArticleResponse = {
@@ -93,7 +86,7 @@ export async function PUT(request: NextRequest, { params }: Props) {
       tags: article.tags,
       status: article.status,
       createdAt: article.createdAt.toISOString(),
-      updatedAt: article.updatedAt.toISOString()
+      updatedAt: article.updatedAt.toISOString(),
     };
 
     return NextResponse.json(articleResponse);
@@ -110,26 +103,20 @@ export async function DELETE(request: NextRequest, { params }: Props) {
   try {
     const isAuthenticated = await authenticate();
     if (!isAuthenticated) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await dbConnect();
     const { id } = await params;
-    const article = await Article.findByIdAndDelete(id);
+    const article: IArticle | null = await Article.findByIdAndDelete(id);
 
     if (!article) {
-      return NextResponse.json(
-        { error: "Article not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Article not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       message: "Article deleted successfully",
-      id: article._id.toString()
+      id: article._id?.toString() ?? article.id,
     });
   } catch (error) {
     console.error("Database Error:", error);

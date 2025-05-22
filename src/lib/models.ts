@@ -131,27 +131,6 @@ const ProjectSchema = new Schema<IProject>(
 // Create indexes for better query performance
 ProjectSchema.index({ status: 1, featured: 1, createdAt: -1 });
 
-// Author Schema
-const AuthorSchema = new Schema<IAuthor>({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  bio: { type: String, required: true },
-  avatarUrl: String,
-  socialLinks: {
-    github: String,
-    linkedin: String,
-    twitter: String,
-    medium: String,
-  },
-});
-
-// Tag Schema
-const TagSchema = new Schema<ITag>({
-  name: { type: String, required: true },
-  slug: { type: String, required: true, unique: true },
-  description: String,
-});
-
 // Article Schema
 const ArticleSchema = new Schema<IArticle>(
   {
@@ -241,14 +220,14 @@ export async function getArticleById(id: string): Promise<{
   const dbConnect = (await import("./mongodb")).default;
   await dbConnect();
 
-  const article = await Article.findById(id).select(
+  const article: IArticle | null = await Article.findById(id).select(
     "_id title slug excerpt content tags status"
   );
 
   if (!article) return null;
 
   return {
-    id: article._id.toString(),
+    id: article._id?.toString() ?? article.id,
     title: article.title,
     slug: article.slug,
     excerpt: article.excerpt,
@@ -258,9 +237,6 @@ export async function getArticleById(id: string): Promise<{
   };
 }
 
-// Models with handling for Next.js hot reloading
-export const Author = models.Author || model<IAuthor>("Author", AuthorSchema);
-export const Tag = models.Tag || model<ITag>("Tag", TagSchema);
 // Using a new collection name to avoid schema conflicts
 export const Article: Model<IArticle> =
   models?.Article || model<IArticle>("Article", ArticleSchema);
